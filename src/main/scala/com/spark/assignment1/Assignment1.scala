@@ -3,6 +3,7 @@ package com.spark.assignment1
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types._
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
@@ -23,11 +24,12 @@ object Assignment1 {
   }
 
 
-  /**
+
+  /** Problem 1
     * How many games were played in each season by all teams combined
     */
   def problem1(game: RDD[Game]): Long = {
-    game.map(x => x.game_id).count()
+    game.distinct().count()
   }
 
   /** Problem 1 SQL
@@ -37,12 +39,14 @@ object Assignment1 {
     * from game g;
     */
 
-  /**
+  /** Problem 2
     * How Many Players Played in the NHL Each Season?
     */
   def problem2(skaterStats: RDD[SkaterStats]): Long = {
-    skaterStats.map(x => x.player_id).count()
-  }
+   skaterStats.map(skater => (skater.player_id, skater)).count() }
+/**    val mappedgames = game.map(game => (game.game_id, game))
+   mappedgames.join(mappedskaters).count()
+  }**/
   /** Problem 2 SQL
     * select distinct
     *   count(ss.player_id)
@@ -51,89 +55,60 @@ object Assignment1 {
     * inner join game g on g.game_id = ss.game_id;
     */
 
-  /**
+  /** Problem 3
     * What Player played for the most teams in the time-span of this data?
     */
-  def problem3(trips: RDD[Trip]): Seq[String] = {
-  //  trips.map(x => x.subscriber_type).collect()
+  def problem3(skaterStats: RDD[SkaterStats], playerInfo: RDD[PlayerInfo]): Seq[String]  = {
+    val mappedskaters = skaterStats.map(skater => (skater.team_id, skater))
+    val mappedplayers = playerInfo.map(player => (player.player_id, player))
+    mappedskaters.leftOuterJoin(mappedplayers).collect()
   }
+  /** Problem 3 SQL
+    * select
+    * pi.player_id
+    * ,pi.firstName
+    * ,pi.lastName
+    * ,ti.shortName
+    * ,ti.teamName
+    * from player_info pi
+    * left join game_skater_stats ss on ss.game_id=pi.game_id AND ss.player_id=pi.player_id
+    * left join team_info ti on ti.team_id=ss.team_id
+    * order by pi.player_id, ti.teamName
+    */
 
-  /**
+
+  /** Problem 4
     * Who scored the most points as a defenseman over his career?
     */
-  def problem4(trips: RDD[Trip]): String = {
-  //  trips.filter(x => x.zip_code.equals(x.zip_code))
+  def problem4(skaterStats: RDD[SkaterStats], playerInfo: RDD[PlayerInfo]): Seq[String] = {
+    val mappedplayers = playerInfo.map(player => (player.primaryPosition, player).equals("D"))
+    val mappedskaters = skaterStats.map(skater => (skater.team_id, skater))
+    mappedskaters.leftOuterJoin(mappedplayers).collect()
   }
+  /** Problem 4 & 5 SQL
+    * select
+    * * pi.player_id
+    * * ,pi.firstName
+    * * ,pi.lastName
+    * * ,ti.shortName
+    * * ,ti.teamName
+    * * from player_info pi
+    * * left join game_skater_stats ss on ss.game_id=pi.game_id AND ss.player_id=pi.player_id
+    * * left join team_info ti on ti.team_id=ss.team_id
+    * * where primaryPosition = 'D'
+    * * order by pi.player_id, ti.teamName
+    */
 
 
-  /**
+  /** Problem 5
     * What team(s) did that defenseman play for over his career?
     */
-  def problem5(trips: RDD[Trip]): Long = {
-  //  trips.filter(x =>  x.start_date < x.end_date).count()
-
+  def problem5(playerInfo: RDD[PlayerInfo]): Seq[String] = {
+    playerInfo.map(x => x.lastName).collect()
   }
 
-
-  /**
-    * Did the 2012-2013 NHL lockout influence the 2013-2014 season when compared to the 2011-2012 season?
-    */
-  def problem6(trips: RDD[Trip]): Long = {
- //   trips.count()
-  }
 
   // Helper function to parse the timestamp format used in the trip dataset.
   private def parseTimestamp(timestamp: String) = LocalDateTime.from(timestampFormat.parse(timestamp))
 }
 
-
-/**
-
-
-/**
-  * What percentage of people keep their bikes overnight at least on night?
-  */
-  def problem7(trips: RDD[Trip]): Double = {
-    ???
-  }
-  /**
-  * Ope! The docks were miscalibrated and only counted half of a trip duration. Double the duration of each trip so
-  * we can have an accurate measurement.
-  */
-  def problem8(trips: RDD[Trip]): Double = {
-    ???
-  }
-
-  /**
-  * Find the coordinates (latitude and longitude) of the trip with the id 913401.
-  */
-  def problem9(trips: RDD[Trip], stations: RDD[Station]): (Double, Double) = {
-???
-  }
-
-  def problem10(trips: RDD[Trip], stations: RDD[Station]): Array[(String, Long)] = {
-    ???
-  }
-
-  /*
-   Dataframes
-  */
-  /**
-  * Select the 'trip_id' column
-  */
-  def dfProblem11(trips: DataFrame): DataFrame = {
-    trips.filter(col("trip_id")).show()
-  }
-  /**
-  * Count all the trips starting at 'Harry Bridges Plaza (Ferry Building)'
-  */
-  def dfProblem12(trips: DataFrame): DataFrame = {
-    trips.select("station_id").show("Harry Bridges Plaza (Ferry Building)")
-  }
-  /**
-  * Sum the duration of all trips
-  */
-  def dfProblem13(trips: DataFrame): Long = {
-    trips.agg(sum("duration")).show(1)
-  }
-  **/

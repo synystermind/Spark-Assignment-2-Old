@@ -5,7 +5,7 @@ import org.apache.spark.sql._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.must.Matchers
-
+import org.apache.spark.sql.types._
 import scala.concurrent.duration._
 
 class Assignment1Test extends AnyFunSuite with Matchers with BeforeAndAfterEach {
@@ -18,8 +18,6 @@ class Assignment1Test extends AnyFunSuite with Matchers with BeforeAndAfterEach 
   val BLOCK_ON_COMPLETION = false;
 
   // Paths to your data.
-  // val TRIP_DATA_CSV_PATH = "data/201508_trip_data.csv"
-  //  val STATION_DATA_CSV_PATH = "data/201508_station_data.csv"
   val GAME_CSV_PATH = "data/game.csv" //Game
   val GAME_GOALIE_STATS_CSV_PATH = "data/game_goalie_stats.csv" //Goalie
   val GAME_PLAYS_CSV_PATH = "data/game_plays.csv" //Plays
@@ -45,8 +43,6 @@ class Assignment1Test extends AnyFunSuite with Matchers with BeforeAndAfterEach 
     * They are 'implicit', meaning they will be picked up by implicit arguments,
     * which are hidden from view but automatically applied.
     */
-  //  implicit val tripEncoder: Encoder[Trip] = Encoders.product[Trip]
-  //  implicit val stationEncoder: Encoder[Station] = Encoders.product[Station]
   implicit val gameEncoder: Encoder[Game] = Encoders.product[Game]
   implicit val goalieEncoder: Encoder[Goalie] = Encoders.product[Goalie]
   implicit val playsEncoder: Encoder[Plays] = Encoders.product[Plays]
@@ -64,67 +60,86 @@ class Assignment1Test extends AnyFunSuite with Matchers with BeforeAndAfterEach 
     Map("inferSchema" -> true.toString, "header" -> true.toString)
 
   /**
-    * Create Game Spark collections
+    * Create Game Spark collections + Write to Parquet
     */
   def gameDataDS: Dataset[Game] = spark.read.options(csvReadOptions).csv(GAME_CSV_PATH).as[Game]
   def gameDataDF: DataFrame = gameDataDS.toDF()
   def gameDataRdd: RDD[Game] = gameDataDS.rdd
+  gameDataDF.write.parquet("data/game_to_parquet")
+  def game_parquetDF: DataFrame= spark.read.parquet("data/game_to_parquet")
+
 
   /**
-    * Create Goalie Spark collections
+    * Create Goalie Spark collections Write to Parquet
     */
   def goalieDataDS: Dataset[Goalie] = spark.read.options(csvReadOptions).csv(GAME_GOALIE_STATS_CSV_PATH).as[Goalie]
   def goalieDataDF: DataFrame = goalieDataDS.toDF()
   def goalieDataRdd: RDD[Goalie] = goalieDataDS.rdd
+  goalieDataDF.write.parquet("data/goalie_to_parquet")
+  def goalie_parquetDF: DataFrame= spark.read.parquet("data/goalie_to_parquet")
 
   /**
-    * Create Plays Spark collections
+    * Create Plays Spark collections Write to Parquet
     */
   def playsDataDS: Dataset[Plays] = spark.read.options(csvReadOptions).csv(GAME_PLAYS_CSV_PATH).as[Plays]
   def playsDataDF: DataFrame = playsDataDS.toDF()
   def playsDataRdd: RDD[Plays] = playsDataDS.rdd
+  playsDataDF.write.parquet("data/plays_to_parquet")
+  def plays_parquetDF: DataFrame= spark.read.parquet("data/plays_to_parquet")
 
   /**
-    * Create Played By Spark collections
+    * Create Played By Spark collections Write to Parquet
     */
   def playedByDataDS: Dataset[PlayedBy] = spark.read.options(csvReadOptions).csv(GAME_PLAYS_PLAYERS_CSV_PATH).as[PlayedBy]
   def playedByDataDF: DataFrame = playedByDataDS.toDF()
   def playedByDataRdd: RDD[PlayedBy] = playedByDataDS.rdd
+  playedByDataDF.write.parquet("data/playedBy_to_parquet")
+  def playedBy_parquetDF: DataFrame= spark.read.parquet("data/playedBy_to_parquet")
 
   /**
-    * Create Shifts Spark collections
+    * Create Shifts Spark collections Write to Parquet
     */
   def shiftsDataDS: Dataset[Shifts] = spark.read.options(csvReadOptions).csv(GAME_SHIFTS_CSV_PATH).as[Shifts]
   def shiftsDataDF: DataFrame = shiftsDataDS.toDF()
   def shiftsDataRdd: RDD[Shifts] = shiftsDataDS.rdd
+  shiftsDataDF.write.parquet("data/shifts_to_parquet")
+  def shifts_parquetDF: DataFrame= spark.read.parquet("data/shifts_to_parquet")
 
   /**
-    * Create Skater Stats Spark collections
+    * Create Skater Stats Spark collections Write to Parquet
     */
   def skaterStatsDataDS: Dataset[SkaterStats] = spark.read.options(csvReadOptions).csv(GAME_SKATER_STATS_CSV_PATH).as[SkaterStats]
   def skaterStatsDataDF: DataFrame = skaterStatsDataDS.toDF()
   def skaterStatsDataRdd: RDD[SkaterStats] = skaterStatsDataDS.rdd
+  skaterStatsDataDF.write.parquet("data/skaterStats_to_parquet")
+  def skaterStats_parquetDF: DataFrame= spark.read.parquet("data/skaterStats_to_parquet")
 
   /**
-    * Create Team Stats Spark collections
+    * Create Team Stats Spark collections Write to Parquet
     */
   def teamStatsDataDS: Dataset[TeamStats] = spark.read.options(csvReadOptions).csv(GAME_TEAM_STATS_CSV_PATH).as[TeamStats]
   def teamStatsDataDF: DataFrame = teamStatsDataDS.toDF()
   def teamStatsDataRdd: RDD[TeamStats] = teamStatsDataDS.rdd
+  teamStatsDataDF.write.parquet("data/teamStats_to_parquet")
+  def teamStats_parquetDF: DataFrame= spark.read.parquet("data/teamStats_to_parquet")
 
   /**
-    * Create Player Info Spark collections
+    * Create Player Info Spark collections Write to Parquet
     */
   def playerInfoDataDS: Dataset[PlayerInfo] = spark.read.options(csvReadOptions).csv(PLAYER_INFO_CSV_PATH).as[PlayerInfo]
   def playerInfoDataDF: DataFrame = playerInfoDataDS.toDF()
   def playerInfoDataRdd: RDD[PlayerInfo] = playerInfoDataDS.rdd
+  playerInfoDataDF.write.parquet("data/playerInfo_to_parquet")
+  def playerInfo_parquetDF: DataFrame= spark.read.parquet("data/playerInfo_to_parquet")
 
   /**
-    * Create Team Info Spark collections
+    * Create Team Info Spark collections Write to Parquet
     */
   def teamInfoDataDS: Dataset[TeamInfo] = spark.read.options(csvReadOptions).csv(TEAM_INFO_CSV_PATH).as[TeamInfo]
   def teamInfoDataDF: DataFrame = teamInfoDataDS.toDF()
   def teamInfoDataRdd: RDD[TeamInfo] = teamInfoDataDS.rdd
+  teamInfoDataDF.write.parquet("data/teamInfo_to_parquet")
+  def teamInfo_parquetDF: DataFrame= spark.read.parquet("data/teamInfo_to_parquet")
 
   /**
     * Keep the Spark Context running so the Spark UI can be viewed after the test has completed.
@@ -141,109 +156,40 @@ class Assignment1Test extends AnyFunSuite with Matchers with BeforeAndAfterEach 
     * How many games were played in each season by all teams combined?
     */
   test("How many games were played in each season by all teams combined?") {
-    Assignment1.problem1(gameDataRdd) must equal()
+    Assignment1.problem1(gameDataRdd) must equal(11434)
   }
 
   /**
     * How Many Players Played in the NHL Each Season?
     */
-  test("How Many Players Played in the NHL Each Season?") {
-    Assignment1.problem2(gameDataRdd) must equal(1069)
+ test("How Many Players Played in the NHL Each Season?") {
+    Assignment1.problem2(skaterStatsDataRdd) must equal(411578)
   }
 
   /**
     * What Player played for the most teams in the timespan of this data?
     */
   test("What Player played for the most teams in the timespan of this data?") {
-    Assignment1.problem3(tripDataRdd).toSet must equal(Set("Customer", "Subscriber"))
+    Assignment1.problem3(playerInfoDataRdd) must equal(("Lee"))
   }
 
   /**
     * Who scored the most points as a defenseman over his career?
     */
   test("Who scored the most points as a defenseman over his career?") {
-    Assignment1.problem4(tripDataRdd) must equal("94107")
+    Assignment1.problem4(playerInfoDataRdd) must equal(("Burns"))
   }
 
   /**
     * What team(s) did that defenseman play for over his career?
     */
   test("What team(s) did that defenseman play for over his career?") {
-    Assignment1.problem5(tripDataRdd) must equal(920)
+    Assignment1.problem5(playerInfoDataRdd) must equal(("MIN", "SJS"))
   }
 
-  /**
-    * Did the 2012-2013 NHL lockout influence the 2013-2014 season when compared to the 2011-2012 season?
-    */
-  test("Did the 2012-2013 NHL lockout influence the 2013-2014 season when compared to the 2011-2012 season?") {
-    Assignment1.problem6(tripDataRdd) must equal(354152)
-  }
+
 
 
 }
 
 
-  /**
-  /**
-   * What percentage of people keep their bikes overnight at least on night?
-   */
-  test("Get the percentage of trips that went overnight") {
-    Assignment1.problem7(tripDataRdd) must be(0.0025 +- .0003)
-  }
-
-  /**
-   * Ope! The docks were miscalibrated and only counted half of a trip duration. Double the duration of each trip so
-   * we can have an accurate measurement.
-   */
-  test("Double the duration of each trip") {
-    Assignment1.problem8(tripDataRdd) must equal (7.40909118E8)
-  }
-
-  /**
-   * Find the coordinates (latitude and longitude) of the trip with the id 913401.
-   */
-  test("Coordinates of trip id 913401") {
-    Assignment1.problem9(tripDataRdd, stationDataRdd) must equal ((37.781039,-122.411748))
-  }
-
-  /**
-   * Find the duration of all trips by starting at each station.
-   * To complete this you will need to join the Station and Trip RDDs.
-   *
-   * The result must be a Array of pairs Array[(String, Long)] where the String is the station name
-   * and the Long is the summation.
-   */
-  test("Duration by station") {
-    val result = Assignment1.problem10(tripDataRdd, stationDataRdd).toSeq
-    result.length must equal (68)
-    result must contain (("San Antonio Shopping Center",2937220))
-    result must contain (("Temporary Transbay Terminal (Howard at Beale)",8843806))
-  }
-
-
-
-  /*
-   * DATAFRAMES
-   */
-
-  /**
-   * Select the 'trip_id' column
-   */
-  test("Select the 'trip_id' column") {
-    Assignment1.dfProblem11(tripDataDF).schema.length must equal (1)
-  }
-
-  /**
-   * Count all the trips starting at 'Harry Bridges Plaza (Ferry Building)'
-   */
-  test("Count of all trips starting at 'Harry Bridges Plaza (Ferry Building)'") {
-    Assignment1.dfProblem12(tripDataDF).count() must equal (17255)
-  }
-
-  /**
-   * Sum the duration of all trips
-   */
-  test("Sum the duration of all trips") {
-    Assignment1.dfProblem13(tripDataDF) must equal (370454559)
-  }
-}     **/
